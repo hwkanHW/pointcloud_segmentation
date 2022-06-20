@@ -1,13 +1,13 @@
 #! /usr/bin/env python
 import numpy as np
 import open3d as o3d
-import sys
 import os
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.dirname(BASE_DIR)
-DATA_DIR = os.path.join(ROOT_DIR,"data")
+DATA_DIR = os.path.join(BASE_DIR,"data/label")
 
-if_visualization = False
+if_visualization = True
 
 def pcd_subdivision(pcd, grid_num_x, grid_num_y):
     max_bound = pcd.get_max_bound()[1:]
@@ -32,24 +32,23 @@ def pcd_subdivision(pcd, grid_num_x, grid_num_y):
         colors_list[index_y*grid_num_x+(index_x-1)].append(colors[i].tolist())
         # print(points_list[index_y*grid_num_x+(index_x-1)])
     ##
-    for i in range(len(points_list)):
-        print(len(points_list[i]))
-        pcd.points = o3d.utility.Vector3dVector(np.array(points_list[i]))
-        pcd.colors = o3d.utility.Vector3dVector(np.array(colors_list[i]))
-        o3d.visualization.draw_geometries([pcd],
-                                          lookat=[ -0.00071885912563767005, 0.036710214427356704, 0.098602843157838918 ],
-                                          up = [ 0.036150451334005476, 0.064092308544618698, 0.99728898562742052 ],
-                                          front = [ -0.99912036372943447, 0.023539986228374905, 0.034704003076456005 ],
-                                          zoom = 0.10)
+    # for i in range(len(points_list)):
+    #     print(len(points_list[i]))
+    #     pcd.points = o3d.utility.Vector3dVector(np.array(points_list[i]))
+    #     pcd.colors = o3d.utility.Vector3dVector(np.array(colors_list[i]))
+    #     o3d.visualization.draw_geometries([pcd],
+    #                                       lookat=[ -0.00071885912563767005, 0.036710214427356704, 0.098602843157838918 ],
+    #                                       up = [ 0.036150451334005476, 0.064092308544618698, 0.99728898562742052 ],
+    #                                       front = [ -0.99912036372943447, 0.023539986228374905, 0.034704003076456005 ],
+    #                                       zoom = 0.10)
     return points_list, colors_list
     
     
 
 
 if __name__ == "__main__":
-    
     # read data from pcd
-    pcd = o3d.io.read_point_cloud(os.path.join(DATA_DIR,"0102.pcd"))
+    pcd = o3d.io.read_point_cloud(os.path.join(DATA_DIR,"0001.pcd"))
     # load data into numpy
     points = np.asarray(pcd.points)
     colors = np.asarray(pcd.colors)

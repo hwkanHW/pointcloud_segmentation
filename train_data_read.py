@@ -7,12 +7,15 @@ import matplotlib.pyplot as plt
 import utils.show3d_balls as show3d
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.dirname(BASE_DIR)
-DATA_DIR = os.path.join(ROOT_DIR,"data")
+DATA_DIR = os.path.join(BASE_DIR,"data/label")
 
 
 if __name__ == "__main__":
+    # file name
+    filename = "0001.pcd"
+    filepath = os.path.join(DATA_DIR,filename)
     # read data from pcd
-    pcd = o3d.io.read_point_cloud(os.path.join(DATA_DIR,"test_label.pcd"))
+    pcd = o3d.io.read_point_cloud(filepath)
     NUM_POINTS = len(np.asarray(pcd.colors))
     # load data into numpy
     points = np.asarray(pcd.points)
@@ -23,14 +26,14 @@ if __name__ == "__main__":
     pcd.points = o3d.utility.Vector3dVector()
     # read label
     labels = []
-    with open(os.path.join(DATA_DIR,"test_label.pcd"), 'r') as f:
+    with open(filepath , 'r') as f:
         i=0
         k=0
         for line in f:
             ls = line.strip().split()
             i=i+1
             if i>10:
-                labels.append(int(ls[-2]))
+                labels.append(bool(int(ls[-2])))
     labels = np.array(labels).astype(np.int32)
     # visualization
     cmap = plt.cm.get_cmap("hsv", 4)
