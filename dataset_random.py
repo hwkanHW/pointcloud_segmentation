@@ -6,6 +6,7 @@ import os
 import matplotlib.pyplot as plt
 import utils.show3d_balls as show3d
 import utils.provider as provider
+from utils.dbscan import dbscan
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.dirname(BASE_DIR)
@@ -42,37 +43,48 @@ def read_points(file_path):
 def simple_segmentation(colors):
     seed = []
     for i in range(len(colors)):
-        if colors[i, 0] >= 0.6 and colors[i, 1] <= 0.35 and colors[i, 2] <= 0.35:
+        if colors[i, 0] >= 0.6 and colors[i, 1] <= 0.4 and colors[i, 2] <= 0.4:
             seed.append(i)
     return np.asarray(seed)
+
 
 
 if __name__ == "__main__":
     # file name
     filename = "0001.pcd"
     filepath = os.path.join(DATA_DIR, filename)
+    # color map
+    cmap = plt.cm.get_cmap("hsv", 4)
+    cmap = np.array([cmap(i) for i in range(30)])[:, :3]
     # read data from pcd
     points, colors = read_points(filepath)
     seed = simple_segmentation(colors)
-    print("%s seed point is choosen" % len(seed))
+    print("%s seed points are choosen" % len(seed))
     # read label
     labels = read_label(filepath)
-    #
+    # #
     pcd = o3d.geometry.PointCloud()
     seed_neighbour = o3d.geometry.PointCloud()
     pcd.points = o3d.utility.Vector3dVector(points)
     pcd.colors = o3d.utility.Vector3dVector(colors)
     pcd_tree = o3d.geometry.KDTreeFlann(pcd)
-    for i in range(20):
-        index = int(len(seed)*np.random.random([1,1]))
-        [k, idx, _] = pcd_tree.search_knn_vector_3d(points[seed[i],:], 8000)
-        seed_neighbour.points = o3d.utility.Vector3dVector(points[idx, :])
-        seed_neighbour.colors = o3d.utility.Vector3dVector(colors[idx, :])
-        o3d.visualization.draw_geometries([seed_neighbour],
-                                          lookat=[1.4235, -0.58550000499999999, 0.2029999945],
-                                          up=[0.21272584752548176, 0.97218161465942343, -0.09803377944750484],
-                                          front=[-0.97709155214739762, 0.21100017921228287, -0.027767302616098732],
-                                          zoom=1.12)
+    seed_points = points[seed]
+    for i in range(200):
+        index = int(len(seed) * np.random.random([1, 1]))
+        [k, idx, _] = pcd_tree.search_knn_vector_3d(points[seed[i], :], 8000)
+        train_pts = points[idx, :]
+        train_lab = labels[idx]
+        if np.max(train_lab) > 1:
+            gt = cmap[train_lab, :]
+            show3d.showpoints(train_pts, gt, ballradius=1)
+        # seed_neighbour.points = o3d.utility.Vector3dVector(points[idx, :])
+        # seed_neighbour.colors = o3d.utility.Vector3dVector(colors[idx, :])
+        # o3d.visualization.draw_geometries([seed_neighbour],
+        #                                   lookat=[2.0839173373147659, -0.16145597655437618, -0.076792589935532757],
+        #                                   up=[-0.15122911613742016, 0.060546159945558287, 0.98664275041584415],
+        #                                   front=[-0.98335812024751634, 0.092445977745939628, -0.15639868459123479],
+        #                                   zoom=3.0)
+
     # visualization
     if FLAGS.if_vis:
         points[:, 0] = -points[:, 0]
